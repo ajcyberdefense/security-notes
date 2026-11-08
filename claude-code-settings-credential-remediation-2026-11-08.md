@@ -45,15 +45,16 @@ Post-change verification confirmed the ignore rule in all 14 repositories and co
 - Review `.claude/settings.json` like executable configuration before merging it; it can define permissions, hooks, environment entries, and integrations.
 - If a secret is ever found in Git history, revoke or rotate it first, then remove it from current files and rewrite history where appropriate. History rewriting does not invalidate an already exposed secret.
 
-## Remaining local-machine check
+## Local-machine follow-up completed
 
-The GitHub repositories were audited and hardened through the connected GitHub account. The local workspace command service was unavailable during this run due to a host sandbox startup error, so the machine-wide Git exclude file and any unpushed local commits were not inspected. When local command execution is available, verify:
+The local root was audited separately after command execution became available.
 
-```powershell
-git status --short
-git check-ignore -v .claude/settings.local.json
-git log --all --name-only --format= -- .claude/settings.local.json .claude/settings.json
-git config --global --get core.excludesFile
-```
+- 13 local Git repositories and linked worktrees were inventoried.
+- 3,416 commits reachable from local refs were checked with full-history pathspecs.
+- No tracked, staged, nonignored-untracked, or historical target files were found.
+- Two ignored dependency copies of `.claude/settings.local.json` were found under `node_modules`; neither contained a recognized credential indicator and neither was tracked.
+- Git's standard per-user global excludes file now contains `**/.claude/settings.local.json`.
+- Root and nested local settings paths were verified ignored in every local repository.
+- Shared `.claude/settings.json` remained unignored in every compatibility check.
 
-Do not print a matched settings file to the terminal or paste it into an issue. Record only the repository, commit, file path, and credential provider/type; rotate the secret through that provider's console.
+No credential rotation was required because neither the connected GitHub audit nor the local audit found a credential in either target settings path. Five uninitialized submodules were absent locally, and remote-only or unreachable Git objects remain outside the local-ref audit.
